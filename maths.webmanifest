@@ -1,0 +1,26 @@
+{
+  "name": "Maths",
+  "short_name": "Maths",
+  "description": "A game to practice simple arithmetic.",
+  "icons": [
+    {
+      "src": "/maths/icons/icon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/maths/icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/maths/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/maths/",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#111111"
+}

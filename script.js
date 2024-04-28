@@ -194,3 +194,14 @@ async function main() {
 
   newQuestion();
 }
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/maths/sw.js', {scope: '/maths/'})
+  .then((reg) => {
+    // registration worked
+    console.log('Registration succeeded. Scope is ' + reg.scope);
+  }).catch((error) => {
+    // registration failed
+    console.log('Registration failed', error);
+  });
+}
