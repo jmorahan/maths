@@ -1,8 +1,31 @@
+(function (fn) {
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    // call on next available tick
+    setTimeout(fn, 0);
+  } else {
+    document.addEventListener("DOMContentLoaded", fn);
+  }
+})(main);
+
 function random(min, max) {
   return min + Math.floor(Math.random() * (max + 1 - min));
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function loadSound(url, context) {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'arraybuffer';
+    request.onload = () => {
+      context.decodeAudioData(request.response,
+      onBuffer = resolve,
+      onDecodeBufferError = reject);
+    };
+    request.send();
+  });
+}
+
+async function main() {
   const questionContainer = document.getElementById('question');
   const answerBox = document.getElementById('answer');
   const answerForm = document.getElementById('answerForm');
@@ -11,6 +34,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const scoreContainer = document.getElementById('score');
   const totalContainer = document.getElementById('total');
   const emoji = document.getElementById('emoji');
+  const context = new AudioContext();
+  const sounds = ['correct', 'wrong', 'levelup'];
+  const buffers = await Promise.all(sounds.map((name) => loadSound(`${name}.opus`, context)));
+  const audio = sounds.reduce((acc, name, idx) => {
+    return {
+      ...acc,
+      [name]: buffers[idx],
+    };
+  }, {});
 
   let answer = null;
   let score = 0;
@@ -32,9 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (response === answer) {
       score++;
       scoreContainer.innerText = score;
-      setEmoji('✔', 'green');
+      setEmoji('✔', 'green', 'correct');
     } else {
-      setEmoji(`${answer}`, 'red');
+      setEmoji(`${answer}`, 'red', 'wrong');
     }
 
     total++;
@@ -45,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (score === level * 10) {
         total = 0;
         levelContainer.innerText = level + 1;
-        setEmoji('🎉', 'green');
+        setEmoji('🎉', 'green', 'levelup');
       } else {
         finished();
         return;
@@ -102,9 +134,15 @@ document.addEventListener('DOMContentLoaded', () => {
     answerBox.focus();
   };
 
-  const setEmoji = (character, className) => {
+  const setEmoji = (character, className, sound) => {
     emoji.innerText = character;
     emoji.className = className;
+
+    const source = context.createBufferSource();
+    source.buffer = audio[sound];
+    source.connect(context.destination);
+    source.start();
+
     restartEmojiFader();
   };
 
@@ -131,4 +169,4 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   newQuestion();
-});
+}
