@@ -21,6 +21,7 @@ function loadSound(url, context) {
       onBuffer = resolve,
       onDecodeBufferError = reject);
     };
+    request.onerror = reject;
     request.send();
   });
 }
@@ -36,13 +37,19 @@ async function main() {
   const emoji = document.getElementById('emoji');
   const context = new AudioContext();
   const sounds = ['correct', 'wrong', 'levelup'];
-  const buffers = await Promise.all(sounds.map((name) => loadSound(`${name}.opus`, context)));
-  const audio = sounds.reduce((acc, name, idx) => {
-    return {
-      ...acc,
-      [name]: buffers[idx],
-    };
-  }, {});
+  const audio = await (async () => {
+    try {
+      const buffers = await Promise.all(sounds.map((name) => loadSound(`${name}.opus`, context)));
+      return sounds.reduce((acc, name, idx) => {
+        return {
+          ...acc,
+          [name]: buffers[idx],
+        };
+      }, {});
+    } catch (e) {
+      return sounds.reduce((acc, name) => ({ ...acc, [name]: null }));
+    }
+  })();
 
   let answer = null;
   let score = 0;
@@ -52,11 +59,26 @@ async function main() {
 
   let emojiOpacity = 0;
 
+  const restart = () => {
+    answer = null;
+    score = 0;
+    level = 0;
+    total = 0;
+    done = false;
+    emojiOpacity = 0;
+    startOver.classList.add('hidden');
+    answerBox.classList.remove('hidden');
+    scoreContainer.innerText = score;
+    totalContainer.innerText = total;
+    levelContainer.innerText = level + 1;
+    newQuestion();
+  };
+
   answerForm.addEventListener('submit', (event) => {
     event.preventDefault();
 
     if (done) {
-      location.reload();
+      restart();
       return;
     }
 
@@ -138,10 +160,12 @@ async function main() {
     emoji.innerText = character;
     emoji.className = className;
 
-    const source = context.createBufferSource();
-    source.buffer = audio[sound];
-    source.connect(context.destination);
-    source.start();
+    if (audio[sound]) {
+      const source = context.createBufferSource();
+      source.buffer = audio[sound];
+      source.connect(context.destination);
+      source.start();
+    }
 
     restartEmojiFader();
   };
