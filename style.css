@@ -1,0 +1,97 @@
+@font-face {
+  font-family: 'Patrick Hand';
+  font-style: normal;
+  font-weight: 400;
+  src: url('PatrickHand-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+.hidden {
+  display: none;
+}
+
+body {
+  color: #000;
+  background-color: #eee;
+}
+
+body, input {
+  text-align: center;
+  font-family: 'Patrick Hand', sans-serif;
+}
+
+#question {
+  font-size: 14vmin;
+  font-weight: bold;
+}
+
+#answer {
+  font-size: 10vmin;
+  font-weight: bold;
+  width: 80%;
+  border: 5px solid black;
+  border-radius: 20px;
+  padding: 1rem;
+}
+
+#emoji {
+  font-size: 20vmin;
+  font-weight: bold;
+}
+
+#emoji.green {
+  color: #040;
+}
+#emoji.red {
+  color: #800;
+}
+
+#score-container {
+  font-size: 8vmin;
+}
+
+#level-container {
+  font-size: 7vmin;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+#startOver {
+  font-size: 10vmin;
+  font-family: 'Patrick Hand', sans-serif;
+  color: #000;
+  background-color: #fbc;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 5px solid black;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #fff;
+    background-color: #111;
+  }
+  #emoji.green {
+    color: #4f4;
+  }
+  #emoji.red {
+    color: #c44;
+  }
+  #startOver {
+    color: #fff;
+    background-color: #845;
+    border-color: #fff;
+  }
+  #answer {
+    border-color: #fff;
+    color: #fff;
+    background-color: #000;
+  }
+}
