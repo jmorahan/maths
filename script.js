@@ -126,14 +126,23 @@ async function main() {
         answer: num1,
       };
     },
-    () => { // multiplication
+    () => { // addition with 3 operands
+      const num1 = random(1, 9);
+      const num2 = random(1, 9);
+      const num3 = random(1, 9);
+      return {
+        question: `${num1} + ${num2} + ${num3} = ?`,
+        answer: num1 + num2 + num3,
+      };
+    },
+    /* () => { // multiplication
       const num1 = random(1, 9);
       const num2 = random(1, 9);
       return {
         question: `${num1} × ${num2} = ?`,
         answer: num1 * num2,
       };
-    },
+    }, */
   ];
 
   const finished = () => {
