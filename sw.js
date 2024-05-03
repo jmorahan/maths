@@ -1,4 +1,4 @@
-const version = 'v2';
+const version = 'v3';
 
 self.addEventListener('install', (event) => {
   console.log('installing service worker version ' + version);
@@ -14,6 +14,7 @@ self.addEventListener('install', (event) => {
         '/maths/correct.opus',
         '/maths/wrong.opus',
         '/maths/levelup.opus',
+        '/maths/record.opus',
         '/maths/icons/icon-32.png',
         '/maths/icons/icon-128.png',
         '/maths/icons/icon-512.png',

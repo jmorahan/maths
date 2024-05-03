@@ -26,6 +26,36 @@ function loadSound(url, context) {
   });
 }
 
+function formatInterval(t) {
+  const intervals = [
+    [1000, 'second', 'seconds'],
+    [60, 'minute', 'minutes'],
+    [60, 'hour', 'hours'],
+    [24, 'day', 'days'],
+  ];
+  const split = [];
+  for (let i = 0; i < intervals.length; ++i) {
+    const [factor] = intervals[i];
+    const mod = t % factor;
+    split.push(mod);
+    t = (t - mod) / factor;
+    if (!t) break;
+  }
+  if (t) split.push(t);
+  split.shift(); // remove milliseconds
+  if (!split.length) split.push(0);
+  const strings = [];
+  for (let i = 0; i < split.length; ++i) {
+    const [, singular, plural] = intervals[i];
+    const num = split[i];
+    if (split.length === 1 || num) {
+      const unit = split[i] === 1 ? singular : plural;
+      strings.push(`${num} ${unit}`);
+    }
+  }
+  return strings.reverse().slice(0, 2).join(' ');
+}
+
 async function main() {
   const questionContainer = document.getElementById('question');
   const answerBox = document.getElementById('answer');
@@ -34,9 +64,13 @@ async function main() {
   const levelContainer = document.getElementById('level');
   const scoreContainer = document.getElementById('score');
   const totalContainer = document.getElementById('total');
+  const statsContainer = document.getElementById('stats');
+  const statusContainer = document.getElementById('status');
   const emoji = document.getElementById('emoji');
+  const lastTime = document.getElementById('last-time');
+  const best = document.getElementById('best');
   const context = new AudioContext();
-  const sounds = ['correct', 'wrong', 'levelup'];
+  const sounds = ['correct', 'wrong', 'levelup', 'record'];
   const audio = await (async () => {
     try {
       const buffers = await Promise.all(sounds.map((name) => loadSound(`${name}.opus`, context)));
@@ -51,13 +85,23 @@ async function main() {
     }
   })();
 
+  const record = {
+    score: Number(localStorage.getItem('score') || '0'),
+    total: Number(localStorage.getItem('total') || '0'),
+    time: Number(localStorage.getItem('time') || '0'),
+  };
+
+  best.innerText = record.time ? `Best: ${record.score} / ${record.total} in ${formatInterval(record.time)}` : '';
+
   let answer = null;
   let score = 0;
   let level = 0;
   let total = 0;
-  let done = false;
+  let done = true; // force initial restart
 
   let emojiOpacity = 0;
+
+  let startTime = 0;
 
   const restart = () => {
     answer = null;
@@ -68,9 +112,13 @@ async function main() {
     emojiOpacity = 0;
     startOver.classList.add('hidden');
     answerBox.classList.remove('hidden');
+    statsContainer.classList.add('hidden');
+    statusContainer.classList.remove('hidden');
+    startOver.innerText = 'Play again';
     scoreContainer.innerText = score;
     totalContainer.innerText = total;
     levelContainer.innerText = level + 1;
+    startTime = Date.now();
     newQuestion();
   };
 
@@ -135,20 +183,77 @@ async function main() {
         answer: num1 + num2 + num3,
       };
     },
-    /* () => { // multiplication
+    // TODO: addition and subtraction (a + b - c)
+/*
+    () => { // multiplication
       const num1 = random(1, 9);
       const num2 = random(1, 9);
       return {
         question: `${num1} × ${num2} = ?`,
         answer: num1 * num2,
       };
-    }, */
+    },
+    () => { // division
+      const num1 = random(1, 9);
+      const num2 = random(1, 9);
+      return {
+        question: `${num1 * num2} ÷ ${num1} = ?`,
+        answer: num2,
+      };
+    },
+    () => { // fractions
+      // NOTE: these don't look great in Patrick Hand
+      const fractions = [
+        ['¼', 1, 4],
+        ['½', 1, 2],
+        ['¾', 3, 4],
+        ['⅐', 1, 7],
+        ['⅑', 1, 9],
+        ['⅒', 1, 10],
+        ['⅓', 1, 3],
+        ['⅔', 2, 3],
+        ['⅕', 1, 5],
+        ['⅖', 2, 5],
+        ['⅗', 3, 5],
+        ['⅘', 4, 5],
+        ['⅙', 1, 6],
+        ['⅚', 5, 6],
+        ['⅛', 1, 8],
+        ['⅜', 3, 8],
+        ['⅝', 5, 8],
+        ['⅞', 7, 8],
+      ];
+      const [fraction, numerator, denominator] = fractions[random(0, fractions.length - 1)];
+      const integer = random(1, 9);
+      return {
+        question: `${fraction} of ${integer * denominator} = ?`,
+        answer: integer * numerator,
+      };
+    },
+*/
   ];
 
   const finished = () => {
+    const timeTaken = Date.now() - startTime;
     done = true;
-    questionContainer.innerText = score === level * 10 + total ? '🌟 PERFECT! 🌟' : 'GAME OVER';
+    questionContainer.innerText = score === problems.length * 10 ? '🌟 PERFECT! 🌟' : 'GAME OVER';
     levelContainer.innerText = level;
+    lastTime.innerText = formatInterval(timeTaken);
+    if (score > record.score || score === record.score && timeTaken < record.time) {
+      record.score = score;
+      record.total = level * 10;
+      record.time = timeTaken;
+      localStorage.setItem('score', `${record.score}`);
+      localStorage.setItem('total', `${record.total}`);
+      localStorage.setItem('time', `${record.time}`);
+      best.innerText = '🏆 NEW RECORD! 🏆';
+      setEmoji('🏆', 'green', 'record');
+    } else if (record.total > 0) {
+      best.innerText = `Best: ${record.score} / ${record.total} in ${formatInterval(record.time)}`;
+    } else {
+      best.innerText = '🦆';
+    }
+    statsContainer.classList.remove('hidden');
     startOver.classList.remove('hidden');
     answerBox.classList.add('hidden');
   };
@@ -158,7 +263,7 @@ async function main() {
       finished();
       return;
     }
-    const problem = (problems[total % 10 ? random(0, level) : level])();
+    const problem = (problems[(total % 10 && random(0, 2)) ? random(0, level) : level])();
     questionContainer.innerText = problem.question;
     answer = problem.answer;
     answerBox.value = '';
@@ -200,8 +305,6 @@ async function main() {
       emoji.style.opacity = 0;
     }
   };
-
-  newQuestion();
 }
 
 if ('serviceWorker' in navigator) {

@@ -6,6 +6,10 @@
   font-display: swap;
 }
 
+:root {
+  font-family: 'Patrick Hand', sans-serif;
+}
+
 .hidden {
   display: none;
 }
@@ -13,16 +17,37 @@
 body {
   color: #000;
   background-color: #eee;
+  text-align: center;
 }
 
-body, input {
+input {
   text-align: center;
   font-family: 'Patrick Hand', sans-serif;
 }
 
+#app {
+  display: grid;
+  grid: 20vmin 10vmin 20vmin 20vmin 25vmin / 1fr;
+  width: 100%;
+}
+
+#status {
+  grid-row: 1;
+}
+
+#stats {
+  grid-row: 2;
+  font-size: 4vmin;
+}
+
 #question {
+  grid-row: 3;
   font-size: 14vmin;
   font-weight: bold;
+}
+
+#answerForm {
+  grid-row: 4;
 }
 
 #answer {
@@ -35,6 +60,7 @@ body, input {
 }
 
 #emoji {
+  grid-row: 5;
   font-size: 20vmin;
   font-weight: bold;
 }
