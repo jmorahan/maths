@@ -7,8 +7,12 @@
   }
 })(main);
 
-function random(min, max) {
-  return min + Math.floor(Math.random() * (max + 1 - min));
+function random(min, max, reject = null, retry = 0) {
+  const num = min + Math.floor(Math.random() * (max + 1 - min));
+  if (retry && reject && reject(num)) {
+    return random(min, max, reject, retry - 1);
+  }
+  return num;
 }
 
 function loadSound(url, context) {
@@ -159,25 +163,25 @@ async function main() {
 
   const problems = [
     () => { // addition
-      const num1 = random(1, 9);
-      const num2 = random(1, 9);
+      const num1 = random(0, 10, (num) => num === 0, 1);
+      const num2 = random(0, 10, (num) => num === 0, 1);
       return {
         question: `${num1} + ${num2} = ?`,
         answer: num1 + num2,
       };
     },
     () => { // subtraction
-      const num1 = random(1, 9);
-      const num2 = random(1, 9);
+      const num1 = random(0, 10, (num) => num === 0, 1);
+      const num2 = random(0, 10, (num) => num === 0, 1);
       return {
         question: `${num1 + num2} - ${num2} = ?`,
         answer: num1,
       };
     },
     () => { // addition with 3 operands
-      const num1 = random(1, 9);
-      const num2 = random(1, 9);
-      const num3 = random(1, 9);
+      const num1 = random(0, 10, (num) => num === 0, 1);
+      const num2 = random(0, 10, (num) => num === 0, (num1 === 0 ? 2 : 1));
+      const num3 = random(0, 10, (num) => num === 0, (num1 * num2 === 0 ? 2 : 1));
       return {
         question: `${num1} + ${num2} + ${num3} = ?`,
         answer: num1 + num2 + num3,
@@ -186,16 +190,16 @@ async function main() {
     // TODO: addition and subtraction (a + b - c)
 /*
     () => { // multiplication
-      const num1 = random(1, 9);
-      const num2 = random(1, 9);
+      const num1 = random(0, 10);
+      const num2 = random(0, 10);
       return {
         question: `${num1} × ${num2} = ?`,
         answer: num1 * num2,
       };
     },
     () => { // division
-      const num1 = random(1, 9);
-      const num2 = random(1, 9);
+      const num1 = random(1, 10); // can't divide by zero
+      const num2 = random(0, 10);
       return {
         question: `${num1 * num2} ÷ ${num1} = ?`,
         answer: num2,
@@ -224,12 +228,19 @@ async function main() {
         ['⅞', 7, 8],
       ];
       const [fraction, numerator, denominator] = fractions[random(0, fractions.length - 1)];
-      const integer = random(1, 9);
+      const integer = random(0, 10);
       return {
         question: `${fraction} of ${integer * denominator} = ?`,
         answer: integer * numerator,
       };
     },
+    // TODO: multiply and add/subtract
+    // TODO: divide and add/subtract
+    // TODO: order of operations (same as above two but written in the other order)
+    // TODO: brackets - eg add and multiply
+    // TODO: signed numbers - add and subtract
+    // TODO: signed numbers - multiply and divide
+    // TODO: can we find a way to do multiple fractions? eg 1/2 + 2/3 (preferably without innerHTML)
 */
   ];
 
