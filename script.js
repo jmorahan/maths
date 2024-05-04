@@ -187,61 +187,46 @@ async function main() {
         answer: num1 + num2 + num3,
       };
     },
-    // TODO: addition and subtraction (a + b - c)
-/*
+    () => { // addition and subtraction (a + b - c)
+      // This is the simplest way I could think of to avoid negative answers without
+      // overly biasing towards smaller numbers:
+      let num1, num2, num3;
+
+      // Maximum retries:
+      let retry = 5;
+      do {
+        num1 = random(0, 10, (num) => num === 0);
+        num2 = random(0, 10, (num) => num === 0);
+        num3 = random(0, 10, (num) => [0, num1, num2].includes(num), 1);
+      } while(num1 + num2 < num3 && --retry);
+      if (retry === 0) {
+        // We failed to get a suitable question in 5 retries; at this point we accept
+        // a small bias rather than risk further running down the timer:
+        num1 = random(0, 10);
+        num2 = random(0, 10);
+        num3 = random(0, Math.min(10, num1 + num2));
+      }
+      return {
+        question: `${num1} + ${num2} - ${num3}`,
+        answer: num1 + num2 - num3,
+      };
+    },
     () => { // multiplication
-      const num1 = random(0, 10);
-      const num2 = random(0, 10);
+      const num1 = random(0, 10, (num) => num <= 1 || num === 10, 2);
+      const num2 = random(0, 10, (num) => num <= 1 || num === 10, 2);
       return {
         question: `${num1} × ${num2} = ?`,
         answer: num1 * num2,
       };
     },
     () => { // division
-      const num1 = random(1, 10); // can't divide by zero
-      const num2 = random(0, 10);
+      const num1 = random(1, 10, (num) => num === 1); // can't divide by zero
+      const num2 = random(0, 10, (num) => num <= 1);
       return {
         question: `${num1 * num2} ÷ ${num1} = ?`,
         answer: num2,
       };
     },
-    () => { // fractions
-      // NOTE: these don't look great in Patrick Hand
-      const fractions = [
-        ['¼', 1, 4],
-        ['½', 1, 2],
-        ['¾', 3, 4],
-        ['⅐', 1, 7],
-        ['⅑', 1, 9],
-        ['⅒', 1, 10],
-        ['⅓', 1, 3],
-        ['⅔', 2, 3],
-        ['⅕', 1, 5],
-        ['⅖', 2, 5],
-        ['⅗', 3, 5],
-        ['⅘', 4, 5],
-        ['⅙', 1, 6],
-        ['⅚', 5, 6],
-        ['⅛', 1, 8],
-        ['⅜', 3, 8],
-        ['⅝', 5, 8],
-        ['⅞', 7, 8],
-      ];
-      const [fraction, numerator, denominator] = fractions[random(0, fractions.length - 1)];
-      const integer = random(0, 10);
-      return {
-        question: `${fraction} of ${integer * denominator} = ?`,
-        answer: integer * numerator,
-      };
-    },
-    // TODO: multiply and add/subtract
-    // TODO: divide and add/subtract
-    // TODO: order of operations (same as above two but written in the other order)
-    // TODO: brackets - eg add and multiply
-    // TODO: signed numbers - add and subtract
-    // TODO: signed numbers - multiply and divide
-    // TODO: can we find a way to do multiple fractions? eg 1/2 + 2/3 (preferably without innerHTML)
-*/
   ];
 
   const finished = () => {
