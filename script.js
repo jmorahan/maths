@@ -73,6 +73,7 @@ async function main() {
   const emoji = document.getElementById('emoji');
   const lastTime = document.getElementById('last-time');
   const best = document.getElementById('best');
+  const accessibleMessage = document.getElementById('accessibleMessage');
   const context = new AudioContext();
   const sounds = ['correct', 'wrong', 'levelup', 'record'];
   const audio = await (async () => {
@@ -116,6 +117,7 @@ async function main() {
     emojiOpacity = 0;
     startOver.classList.add('hidden');
     answerBox.classList.remove('hidden');
+    setTimeout(() => answerBox.focus(), 0);
     statsContainer.classList.add('hidden');
     statusContainer.classList.remove('hidden');
     startOver.innerText = 'Play again';
@@ -167,6 +169,7 @@ async function main() {
       const num2 = random(0, 10, (num) => num === 0, 1);
       return {
         question: `${num1} + ${num2} = ?`,
+        accessibleQuestion: `${num1} plus ${num2}`,
         answer: num1 + num2,
       };
     },
@@ -175,6 +178,7 @@ async function main() {
       const num2 = random(0, 10, (num) => num === 0, 1);
       return {
         question: `${num1 + num2} - ${num2} = ?`,
+        accessibleQuestion: `${num1 + num2} minus ${num2}`,
         answer: num1,
       };
     },
@@ -184,6 +188,7 @@ async function main() {
       const num3 = random(0, 10, (num) => num === 0, (num1 * num2 === 0 ? 2 : 1));
       return {
         question: `${num1} + ${num2} + ${num3} = ?`,
+        accessibleQuestion: `${num1} plus ${num2} plus ${num3}`,
         answer: num1 + num2 + num3,
       };
     },
@@ -208,6 +213,7 @@ async function main() {
       }
       return {
         question: `${num1} + ${num2} - ${num3} = ?`,
+        accessibleQuestion: `${num1} plus ${num2} minus ${num3}`,
         answer: num1 + num2 - num3,
       };
     },
@@ -216,6 +222,7 @@ async function main() {
       const num2 = random(0, 10, (num) => num <= 1 || num === 10, 2);
       return {
         question: `${num1} × ${num2} = ?`,
+        accessibleQuestion: `${num1} times ${num2}`,
         answer: num1 * num2,
       };
     },
@@ -224,17 +231,24 @@ async function main() {
       const num2 = random(0, 10, (num) => num <= 1);
       return {
         question: `${num1 * num2} ÷ ${num1} = ?`,
+        accessibleQuestion: `${num1 * num2} divided by ${num1}`,
         answer: num2,
       };
     },
   ];
 
   const finished = () => {
+    const messages = [];
     const timeTaken = Date.now() - startTime;
     done = true;
-    questionContainer.innerText = score === problems.length * 10 ? '🌟 PERFECT! 🌟' : 'GAME OVER';
+    const perfect = score === problems.length * 10;
+    questionContainer.innerText = perfect ? '🌟 PERFECT! 🌟' : 'GAME OVER';
+    messages.push(perfect ? 'Perfect!' : 'Game over.');
     levelContainer.innerText = level;
-    lastTime.innerText = formatInterval(timeTaken);
+    messages.push(`Level ${level}.`);
+    const interval = formatInterval(timeTaken);
+    lastTime.innerText = interval;
+    messages.push(`${score} out of ${level * 10} in ${interval}.`);
     if (score > record.score || score === record.score && timeTaken < record.time) {
       record.score = score;
       record.total = level * 10;
@@ -243,15 +257,20 @@ async function main() {
       localStorage.setItem('total', `${record.total}`);
       localStorage.setItem('time', `${record.time}`);
       best.innerText = '🏆 NEW RECORD! 🏆';
+      messages.push('New record!');
       setEmoji('🏆', 'green', 'record');
     } else if (record.total > 0) {
-      best.innerText = `Best: ${record.score} / ${record.total} in ${formatInterval(record.time)}`;
+      const bestInterval = formatInterval(record.time);
+      best.innerText = `Best: ${record.score} / ${record.total} in ${bestInterval}`;
+      messages.push(`Best: ${record.score} out of ${record.total} in ${bestInterval}.`);
     } else {
       best.innerText = '🦆';
     }
     statsContainer.classList.remove('hidden');
     startOver.classList.remove('hidden');
     answerBox.classList.add('hidden');
+    accessibleMessage.innerText = messages.join("\n");
+    setTimeout(() => startOver.focus(), 0);
   };
 
   const newQuestion = () => {
@@ -261,9 +280,9 @@ async function main() {
     }
     const problem = (problems[(total % 10 && random(0, 2)) ? random(0, level) : level])();
     questionContainer.innerText = problem.question;
+    accessibleMessage.innerText = problem.accessibleQuestion;
     answer = problem.answer;
     answerBox.value = '';
-    answerBox.focus();
   };
 
   const setEmoji = (character, className, sound) => {
