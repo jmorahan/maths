@@ -90,9 +90,9 @@ async function main() {
   })();
 
   const record = {
-    score: Number(localStorage.getItem('score') || '0'),
-    total: Number(localStorage.getItem('total') || '0'),
-    time: Number(localStorage.getItem('time') || '0'),
+    score: Number(localStorage?.getItem('score') || '0'),
+    total: Number(localStorage?.getItem('total') || '0'),
+    time: Number(localStorage?.getItem('time') || '0'),
   };
 
   best.innerText = record.time ? `Best: ${record.score} / ${record.total} in ${formatInterval(record.time)}` : '';
@@ -207,7 +207,7 @@ async function main() {
         num3 = random(0, Math.min(10, num1 + num2));
       }
       return {
-        question: `${num1} + ${num2} - ${num3}`,
+        question: `${num1} + ${num2} - ${num3} = ?`,
         answer: num1 + num2 - num3,
       };
     },
