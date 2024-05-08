@@ -108,11 +108,14 @@ async function main() {
 
   let startTime = 0;
 
+  const used = new Set();
+
   const restart = () => {
     answer = null;
     score = 0;
     level = 0;
     total = 0;
+    used.clear();
     done = false;
     emojiOpacity = 0;
     startOver.classList.add('hidden');
@@ -278,7 +281,12 @@ async function main() {
       finished();
       return;
     }
-    const problem = (problems[(total % 10 && random(0, 2)) ? random(0, level) : level])();
+    let problem;
+    let tries = 6;
+    do {
+      problem = (problems[(total % 10 && random(0, 2)) ? random(0, level) : level])();
+    } while (used.has(problem.question) && --tries);
+    used.add(problem.question);
     questionContainer.innerText = problem.question;
     accessibleMessage.innerText = problem.accessibleQuestion;
     answer = problem.answer;
